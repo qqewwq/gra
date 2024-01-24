@@ -1,14 +1,11 @@
 import random
 
-    
-
 def create_deck():
     suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
     ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
     deck = [{'rank': rank, 'suit': suit} for suit in suits for rank in ranks]
     random.shuffle(deck)
     return deck
-
 
 def calculate_hand_value(hand):
     value = 0
@@ -25,7 +22,6 @@ def calculate_hand_value(hand):
         value -= 10
         ace_count -= 1
     return value
-
 
 def display_hand(hand, player_name):
     print(f"\n{player_name} karty:")
@@ -51,18 +47,37 @@ def display_hand(hand, player_name):
         print("└───────┘", end=" ")
     print()
 
+def save_money_to_file(player_money):
+    with open("player_money.txt", "w") as file:
+        file.write(str(player_money))
+
+def load_money_from_file():
+    try:
+        with open("player_money.txt", "r") as file:
+            return int(file.read())
+    except FileNotFoundError:
+        return 100  # Zwracamy wartość domyślną, jeśli plik nie został znaleziony.
 
 def play_blackjack():
     print("Witam w Blackjacku!")
     print("Jeśli nie znasz zasad, napisz 'r' ")
     print("Jeśli znasz zasady, napisz 'p', aby zagrać")
     question = input("")
+
     if question == 'r':
         print("rules")
     elif question == 'p':
-        player_money = 100  
+        # Wczytywanie pieniędzy gracza przy rozpoczęciu gry.
+        player_money = load_money_from_file()
+
         while True:
             print(f"\nMasz ${player_money}")
+
+            if player_money >= 25000:
+                print("Direktor naszego kasyna poprosił powiedzieć, że już wystarczy.")
+                print("Również prosi, abyś opuścił naszą grę.")
+                break
+
             bet = int(input("Postaw zakład (minimalny zakład wynosi 10): "))
             if bet > player_money:
                 print("Nie masz wystarczającej ilości pieniędzy.")
@@ -75,22 +90,19 @@ def play_blackjack():
             player_hand = []
             dealer_hand = []
 
-            
             player_hand.append(deck.pop())
             dealer_hand.append(deck.pop())
             player_hand.append(deck.pop())
             dealer_hand.append(deck.pop())
 
-            
             display_hand(player_hand, "Gracz")
             display_hand(dealer_hand, "Krupier")
 
-            
             while True:
                 player_value = calculate_hand_value(player_hand)
                 if player_value == 21:
                     print("Blackjack! Wygrałeś!")
-                    player_money += bet * 1.5  
+                    player_money += bet * 1.5
                     break
                 elif player_value > 21:
                     print("Przegrana! ")
@@ -104,18 +116,15 @@ def play_blackjack():
                 elif action == 'p':
                     break
 
-            
             dealer_value = calculate_hand_value(dealer_hand)
             while dealer_value < 17:
                 dealer_hand.append(deck.pop())
                 dealer_value = calculate_hand_value(dealer_hand)
 
-            
             print("\nKarty:")
             display_hand(player_hand, "Gracz")
             display_hand(dealer_hand, "Krupier")
 
-            
             if dealer_value > 21:
                 print("Krupier przekroczył limit! Wygrywasz!")
                 player_money += bet
@@ -128,6 +137,9 @@ def play_blackjack():
             else:
                 print("Remis!")
 
+            # Zapisywanie pieniędzy gracza po zakończeniu gry.
+            save_money_to_file(player_money)
+
             if player_money <= 0:
                 print("Składki na stole! Koniec gry.")
                 break
@@ -136,7 +148,6 @@ def play_blackjack():
             if play_again != 't':
                 print("Dziękujemy za grę!")
                 break
-    
 
 
 play_blackjack()
